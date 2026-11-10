@@ -1,0 +1,40 @@
+---
+# Test target playbook. Remove after testing phase.
+- name: AAP Validation Test Target
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  tasks:
+    - name: "TEST Success"
+      ansible.builtin.command: echo "arch x86_64"
+      changed_when: false
+      # expected: SUCCESS - Task was successful and output contained x86_64.
+
+    - name: "TEST Ignored error with pattern"
+      ansible.builtin.shell: echo "arch x86_64"; exit 1
+      changed_when: false
+      ignore_errors: true
+      # expected: SUCCESS - Task reported an error (ignored) but output contained x86_64.
+
+    - name: "TEST Wrong output"
+      ansible.builtin.command: echo "arch aarch64"
+      changed_when: false
+      # expected: FAILED - Task ran but output did not contain x86_64.
+
+    - name: "TEST Ignored error without pattern"
+      ansible.builtin.shell: echo "something went wrong"; exit 1
+      changed_when: false
+      ignore_errors: true
+      # expected: FAILED - Task failed and output did not contain x86_64.
+
+    - name: "TEST Pattern only in command"
+      ansible.builtin.shell: "echo nothing # x86_64"
+      changed_when: false
+      # expected: FAILED - the pattern is only in the invocation arguments
+
+    - name: "TEST Skipped"
+      ansible.builtin.debug:
+        msg: "x86_64"
+      when: false
+      # expected: FAILED - Task was skipped.
